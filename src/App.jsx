@@ -4,15 +4,19 @@ import Formulario from './components/Formulario'
 import InstalarMetamask from './components/InstalarMetamask';
 import Nav from './components/Nav'
 import React, {useState, useEffect} from 'react';
+import smartContractRegistro from "./smartContract/registro.json";
 import Web3 from "web3";
 
 function App() {
+
+  console.log(smartContractRegistro);
 
 const [Metamask, setMetamask] = useState(false);
 
 const [web3, setWeb3] = useState(null);
 const [account, setAccount] = useState(null);
 const [balance, setBalance] = useState(null)
+const [contract, setContract] = useState(null);
 
 const conectarWallet = async () => {
   if(typeof window.ethereum !== 'undefined'){
@@ -34,6 +38,15 @@ const conectarWallet = async () => {
       const balanceEth = web3Instance.utils.fromWei(balanceWei, 'ether');
       setBalance(balanceEth);
 
+      const contractInstance = new web3Instance.eth.Contract(
+        smartContractRegistro,
+        smartContractRegistro && "0x34D44DBc2c73B0eCb4bC738bfB850f92AaB89ae2"
+      );
+       //Creamos una instancia
+      setContract(contractInstance);
+      console.log("contractInstance ==> ", contractInstance);
+      
+
     }catch(error){
       console.error(error);
     }
@@ -42,6 +55,21 @@ const conectarWallet = async () => {
   }
   console.log("Conectar wallet");
 }
+
+const ListarRegistros = async () => {
+  console.log("contract ==> ", contract);
+  if(contract){
+    try{
+      const contadorRegistro = await contract.methods.registroCounter().call();
+      console.log("contadorRegistro ==> ", contadorRegistro);
+    }catch(error){
+      console.error('Error al actualizar el valor');
+    }
+
+  }
+};
+
+useEffect(() => {ListarRegistros(); }, [contract]);
 
  // Validar que en el navegador del usuario esté la extensión de metamask y el resultado se pasa al useState: setMetamask
 useEffect(()=>{
