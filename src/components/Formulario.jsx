@@ -1,8 +1,13 @@
 import './formulario.css'
 import React, {useState} from 'react';
 
+import Swal from 'sweetalert2'
+import withReactContent from 'react-sweetalert2'
 
-function Formulario() {
+
+function Formulario(props) {
+
+  const MySwal = withReactContent(Swal);
 
   const inicialDatos = {
     informacion: '',
@@ -15,12 +20,47 @@ function Formulario() {
 
     const [datos, setDatos] = useState(inicialDatos);
 
-    const enviar = (e) => {
+    const enviar = async (e) => {
       e.preventDefault();
 
+      // llamamos a nuestro smart contract y utilizamos el metodo/Function para crear nuestra tarea "crearRegistro"
+      try{
+        const result = await props.contract.methods.crearRegistro(
+          datos.informacion,
+          datos.categoria,
+          datos.titulo,
+          datos.fecha_inicio,
+          datos.fecha_final
+        ).send({from:props.account});
 
-      setDatos(inicialDatos);
-      
+        if(result.status){
+          MySwal.fire(
+            {
+              position: 'top-end',
+              icon: 'success',
+              title: 'Tu registro fue exito',
+              showConfirmButton: false,
+              timer: 2500
+            }
+          )
+
+          setDatos(inicialDatos);
+        }
+        else{
+          errorTransacion();
+        }
+
+      }catch(error){
+        errorTransacion();
+      }
+    };
+
+    const errorTransacion = () => {
+      Swal.fire({
+        icon: 'error',
+        title: 'Oops...',
+        text: '¡La transacción no fue completa, vuelve a intentar más tarde!!'
+      })
     }
 
     const manejarFormulario = ({target: {name, value}})=>{

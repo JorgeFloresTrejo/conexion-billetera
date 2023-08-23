@@ -5,6 +5,8 @@ import InstalarMetamask from './components/InstalarMetamask';
 import Nav from './components/Nav'
 import React, {useState, useEffect} from 'react';
 import smartContractRegistro from "./smartContract/registro.json";
+import Swal from 'sweetalert2'
+import withReactContent from 'react-sweetalert2';
 import Web3 from "web3";
 
 function App() {
@@ -17,6 +19,9 @@ const [web3, setWeb3] = useState(null);
 const [account, setAccount] = useState(null);
 const [balance, setBalance] = useState(null)
 const [contract, setContract] = useState(null);
+const [listarInformacionEstudios, setListarInformacionEstudios] = useState([]);
+
+const MySwal = withReactContent(Swal)
 
 const conectarWallet = async () => {
   if(typeof window.ethereum !== 'undefined'){
@@ -49,19 +54,48 @@ const conectarWallet = async () => {
 
     }catch(error){
       console.error(error);
+      MySwal.fire({
+        icon: 'error',
+        title: 'Oops...',
+        text: 'Has rechazado la solicitud de conexión con tu wallet'
+      });
     }
   } else{
     setMetamask(false);
   }
   console.log("Conectar wallet");
-}
+};
 
+//Función para listar los registros
 const ListarRegistros = async () => {
   console.log("contract ==> ", contract);
   if(contract){
     try{
       const contadorRegistro = await contract.methods.registroCounter().call();
-      console.log("contadorRegistro ==> ", contadorRegistro);
+      let arrayEstudio = [];
+
+      for(let i = 1; i<= contadorRegistro; i++){
+        const infoEstudio = await contract.methods.estudios(i).call();
+
+        if(infoEstudio != ' '){
+          const estudio = {
+            categoria: infoEstudio.categoria,
+            creatAtl: infoEstudio.creatAtl,
+            fechaFin: infoEstudio.fechaFin,
+            fechaInicio: infoEstudio.fechaInicio,
+            id: infoEstudio.id,
+            lugarDeFormacion: infoEstudio.lugarDeFormacion,
+            tituloEstudio: infoEstudio.tituloEstudio,
+            verificacion: infoEstudio.verificacion
+          };
+          arrayEstudio.push(estudio);
+
+        };
+
+        setListarInformacionEstudios(arrayEstudio);
+
+      };
+
     }catch(error){
       console.error('Error al actualizar el valor');
     }
@@ -91,7 +125,7 @@ useEffect(()=>{
       Metamask ?(
       <>
         <Nav conectarwallet = {conectarWallet}/>
-        <Formulario />
+        <Formulario account={account} balance={balance} contract={contract}/>
         <DatosCuenta cuenta = {account} balance = {balance}/>
       </>
       ):(
