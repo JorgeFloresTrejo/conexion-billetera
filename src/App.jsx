@@ -8,6 +8,7 @@ import smartContractRegistro from "./smartContract/registro.json";
 import Swal from 'sweetalert2'
 import withReactContent from 'react-sweetalert2';
 import Web3 from "web3";
+import ListaRegistro from './components/ListarRegistro';
 
 function App() {
 
@@ -17,8 +18,9 @@ const [Metamask, setMetamask] = useState(false);
 
 const [web3, setWeb3] = useState(null);
 const [account, setAccount] = useState(null);
-const [balance, setBalance] = useState(null)
+const [balance, setBalance] = useState(null);
 const [contract, setContract] = useState(null);
+const [buttonWallet, setButtonWallet] = useState(false);
 const [listarInformacionEstudios, setListarInformacionEstudios] = useState([]);
 
 const MySwal = withReactContent(Swal)
@@ -42,6 +44,7 @@ const conectarWallet = async () => {
       //Representar el saldo de la cuenta en Wei
       const balanceEth = web3Instance.utils.fromWei(balanceWei, 'ether');
       setBalance(balanceEth);
+      setButtonWallet(false);
 
       const contractInstance = new web3Instance.eth.Contract(
         smartContractRegistro,
@@ -49,7 +52,7 @@ const conectarWallet = async () => {
       );
        //Creamos una instancia
       setContract(contractInstance);
-      console.log("contractInstance ==> ", contractInstance);
+      // console.log("contractInstance ==> ", contractInstance);
       
 
     }catch(error){
@@ -66,40 +69,37 @@ const conectarWallet = async () => {
   console.log("Conectar wallet");
 };
 
-//Función para listar los registros
 const ListarRegistros = async () => {
-  console.log("contract ==> ", contract);
-  if(contract){
-    try{
-      const contadorRegistro = await contract.methods.registroCounter().call();
+  // console.log("contract==>",contract);
+  if (contract) {
+    try {
+      const contadorRegistros = await contract.methods.registroCounter().call();
+
       let arrayEstudio = [];
-
-      for(let i = 1; i<= contadorRegistro; i++){
-        const infoEstudio = await contract.methods.estudios(i).call();
-
-        if(infoEstudio != ' '){
+      for (let i = 1; i <= contadorRegistros; i++) {
+        const inforestudio = await contract.methods.estudios(i).call();
+        if (inforestudio.categoria != " ") {
           const estudio = {
-            categoria: infoEstudio.categoria,
-            creatAtl: infoEstudio.creatAtl,
-            fechaFin: infoEstudio.fechaFin,
-            fechaInicio: infoEstudio.fechaInicio,
-            id: infoEstudio.id,
-            lugarDeFormacion: infoEstudio.lugarDeFormacion,
-            tituloEstudio: infoEstudio.tituloEstudio,
-            verificacion: infoEstudio.verificacion
+            categoria: inforestudio.categoria,
+            creatAtl: inforestudio.creatAtl,
+            fechaFin: inforestudio.fechaFin,
+            fechaInicio: inforestudio.fechaInicio,
+            id: inforestudio.id,
+            lugarDeFormacion: inforestudio.lugarDeFormacion,
+            tituloEstudio: inforestudio.tituloEstudio,
+            verificacion: inforestudio.verificacion
           };
           arrayEstudio.push(estudio);
-
         };
-
-        setListarInformacionEstudios(arrayEstudio);
-
       };
 
-    }catch(error){
-      console.error('Error al actualizar el valor');
-    }
+      console.log(arrayEstudio);
 
+      setListarInformacionEstudios(arrayEstudio);
+
+    } catch (error) {
+      console.error('Error al actualizar el valor:', error);
+    }
   }
 };
 
@@ -109,12 +109,9 @@ useEffect(() => {ListarRegistros(); }, [contract]);
 useEffect(()=>{
   async function wallet(){
     if(typeof window.ethereum !== 'undefined'){
-
       setMetamask(true);
-
-    } else{
-      setMetamask(false);
-    }
+      setButtonWallet(true);
+    };
   };
   wallet();
 }, []);
@@ -125,8 +122,9 @@ useEffect(()=>{
       Metamask ?(
       <>
         <Nav conectarwallet = {conectarWallet}/>
-        <Formulario account={account} balance={balance} contract={contract}/>
+        <Formulario direccion={account} contrato={contract}/>
         <DatosCuenta cuenta = {account} balance = {balance}/>
+        <ListaRegistro listarInformacion={listarInformacionEstudios}/>
       </>
       ):(
         <InstalarMetamask />

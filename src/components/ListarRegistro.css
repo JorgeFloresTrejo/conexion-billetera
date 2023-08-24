@@ -1,0 +1,16 @@
+#contenedor{
+    width: 80%;
+    height: auto;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    margin: 10px auto;
+}
+.informacion{
+    border: 2px solid black;
+    margin: 5px ;
+    width: 200px;
+    height: 80px;
+    text-align: center;
+    line-height: 80px;
+}

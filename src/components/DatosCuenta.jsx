@@ -15,7 +15,7 @@ function DatosCuenta(props){
          <table border={1}>
             <thead>
                 <tr>
-                    <th>Cuenta</th>
+                    <th>Dirección de cuenta</th>
                     <th>Balance</th>
                 </tr>
             </thead>
